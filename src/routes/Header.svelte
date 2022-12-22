@@ -1,5 +1,5 @@
 <script>
-	import github from '$lib/images/github.svg';
+	import github from '$assets/github.svg';
 </script>
 
 <header>
