@@ -1,9 +1,19 @@
 import adapter from '@sveltejs/adapter-auto';
+import autoprefixer from 'autoprefixer';
+import preprocess from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
+	preprocess: preprocess({
+		postcss: {
+			plugins: [autoprefixer]
+		}
+	}),
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			pages: 'docs',
+			assets: 'docs'
+		}),
 		alias: {
 			'$actions/*': './src/lib/actions/*',
 			'$assets/*': './src/lib/assets/*',

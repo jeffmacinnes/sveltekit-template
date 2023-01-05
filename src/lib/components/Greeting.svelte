@@ -2,7 +2,7 @@
 	export let msg = 'Hi there';
 </script>
 
-<h1>This is the Greeting Components</h1>
+<h1>This is the Greeting Component</h1>
 <h2>{msg}</h2>
 
 <style>
