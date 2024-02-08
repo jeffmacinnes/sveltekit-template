@@ -152,3 +152,31 @@ export const removeDuplicatesBy = (keyFn, array) => {
 		return isNew;
 	});
 };
+
+export const hex2rgb = (hex) => {
+	// Remove the hash character if it's included
+	hex = hex.replace('#', '');
+
+	// Convert the hex value to RGB values
+	var r = parseInt(hex.substring(0, 2), 16);
+	var g = parseInt(hex.substring(2, 4), 16);
+	var b = parseInt(hex.substring(4, 6), 16);
+
+	// Return the RGB values as an array
+	return [r, g, b];
+};
+
+export const rgbToHex = ([r, g, b]) => {
+	// Ensure that the RGB values are within the valid range (0-255)
+	r = Math.max(0, Math.min(255, r));
+	g = Math.max(0, Math.min(255, g));
+	b = Math.max(0, Math.min(255, b));
+
+	// Convert the RGB values to hexadecimal format
+	var hexR = r.toString(16).padStart(2, '0'); // Convert to hexadecimal and pad with zeros if necessary
+	var hexG = g.toString(16).padStart(2, '0');
+	var hexB = b.toString(16).padStart(2, '0');
+
+	// Concatenate the hexadecimal values and return
+	return '#' + hexR + hexG + hexB;
+};
