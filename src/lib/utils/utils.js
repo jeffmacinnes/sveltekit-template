@@ -123,6 +123,8 @@ export const formatCurrency = (value, decimalPts = 0) => {
 	return `$${value}${suffix}`;
 };
 
+export const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
+
 export const removeDuplicatesBy = (keyFn, array) => {
 	/* return a copy of array of objects, where each item is unique based on the given key
 		 e.g. 
