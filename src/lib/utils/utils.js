@@ -123,6 +123,12 @@ export const formatCurrency = (value, decimalPts = 0) => {
 	return `$${value}${suffix}`;
 };
 
+export const formatOrdinal = (value) => {
+	const suffixes = ['th', 'st', 'nd', 'rd'];
+	const v = value % 100;
+	return value + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+};
+
 export const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
 export const removeDuplicatesBy = (keyFn, array) => {
