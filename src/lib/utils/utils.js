@@ -131,6 +131,12 @@ export const formatOrdinal = (value) => {
 
 export const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1);
 
+export const degreeToCompass = (degrees) => {
+	const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'N'];
+	const index = Math.round((degrees % 360) / 45);
+	return directions[index];
+};
+
 export const removeDuplicatesBy = (keyFn, array) => {
 	/* return a copy of array of objects, where each item is unique based on the given key
 		 e.g. 
