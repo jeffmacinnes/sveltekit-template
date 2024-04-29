@@ -7,6 +7,9 @@ const config = {
 	preprocess: preprocess({
 		postcss: {
 			plugins: [autoprefixer]
+		},
+		scss: {
+			prependData: `@import './src/lib/styles/mixins.scss';`
 		}
 	}),
 	kit: {
