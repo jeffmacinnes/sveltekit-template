@@ -1,22 +1,24 @@
 /*
-This action triggers a custom tooltip component to appear when a given element is hovered. You supply
+This action triggers a custom tooltip component to appear when a given node is hovered. You supply
 the component (and any number of props) as input parameters to the action. 
 
 Usage:
-
-<div
-  use=tooltip={{
-    component: MyTooltip,
-    props: {
-      title: 'My Custom Tooltip'
-    }
-  }}
-> Hover me </div>
+  <div
+    use=tooltip={{
+      component: MyTooltip,
+      props: {
+        title: 'My Custom Tooltip'
+        ...
+      }
+    }}
+  > Hover me </div>
 
 The action will handle the positioning of the tooltip using Popper.js. Set the popper 
-options in here to change where and how the tooltip gets positioned. 
+options in here to change where and how the tooltip gets positioned. Full list of popper options
+can be found: https://popper.js.org/docs/v2/constructors/
 
-At minimum, the custom tooltip component MUST have the following features (note the id attribute of wrapper):
+At minimum, the custom tooltip component MUST have the following features 
+(note the id attribute of wrapper. This must be 'tooltip', since it is referenced by id in the code below):
 
 <script>
   export let x;
@@ -24,7 +26,7 @@ At minimum, the custom tooltip component MUST have the following features (note 
 </script>
 
 <div id="tooltip" style="top: {y}px; left: {x}px;">
-TOOL TIP CONTENT
+  TOOL TIP CONTENT
 </div>
 
 <style>
@@ -32,114 +34,83 @@ TOOL TIP CONTENT
     position: absolute;
   }
 </style>
-
 */
 
-import { createPopper } from '@popperjs/core';
+const getCoords = (event, strategy) => {
+	/* return the coordinates of the mouse event based on current strategy. 
+    strategy: 'fixed' or 'absolute'. 
+      'fixed' will return coords at center of node
+      'absolute'  is at mouse location
 
-export function tooltip(element, params = {}) {
-	let tooltipRef;
-	let popperRef;
-	let tooltipComponent = params.component;
-	let tooltipProps = params.props;
-
-	function generateGetBoundingClientRect(x = 0, y = 0) {
-		return () => ({
-			width: 0,
-			height: 0,
-			top: y,
-			right: x,
-			bottom: y,
-			left: x
-		});
+    In both cases, the coordinates are expressed relative to the overall document
+  */
+	if (strategy === 'fixed') {
+		const rect = event.target.getBoundingClientRect();
+		return {
+			x: rect.left + rect.width / 2,
+			y: rect.top + rect.height / 2
+		};
+	} else {
+		return {
+			x: event.pageX,
+			y: event.pageY
+		};
 	}
+};
 
-	const virtualElement = {
-		getBoundingClientRect: generateGetBoundingClientRect()
-	};
+export const tooltip = (node, params) => {
+	const tooltipComponent = params.component;
+	const tooltipProps = params.props || {};
+	const config = params.config || {};
+	const strategy = config.strategy || 'fixed';
 
-	function mouseOver(event) {
+	let tooltipRef;
+	let nodeTitle;
+
+	const mouseOver = (event) => {
+		// --- Create Tooltip
+		// remove 'title' from node to prevent default tooltip
+		nodeTitle = node.getAttribute('title');
+		node.removeAttribute('title');
+
+		// create instance of tooltip component
+		let coords = getCoords(event, strategy);
 		tooltipRef = new tooltipComponent({
 			props: {
 				...tooltipProps,
-				x: event.pageX,
-				y: event.pageY
+				x: coords.x,
+				y: coords.y
 			},
 			target: document.body
 		});
-
-		let tooltip = document.querySelector('#tooltip');
-		tooltip.setAttribute('data-show', '');
-
-		popperRef = createPopper(virtualElement, tooltip, {
-			placement: tooltipProps.placement || 'top',
-			strategy: 'fixed',
-			modifiers: [
-				{
-					name: 'offset',
-					options: {
-						offset: [0, 8]
-					}
-				}
-			]
-		});
-	}
+	};
 
 	function mouseMove(event) {
-		let { clientX: x, clientY: y } = event;
-		virtualElement.getBoundingClientRect = generateGetBoundingClientRect(x, y);
-		popperRef.update();
-
+		if (config?.strategy === 'fixed') return; // don't do anything if strategy is fixed
+		// update the tooltip position
+		let coords = getCoords(event, strategy);
 		tooltipRef.$set({
-			x: event.pageX,
-			y: event.pageY
+			x: coords.x,
+			y: coords.y
 		});
 	}
 
 	function mouseLeave() {
 		let tooltip = document.querySelector('#tooltip');
 		tooltip.removeAttribute('data-show');
-
-		if (popperRef) {
-			popperRef.destroy();
-			popperRef = null;
-		}
-
+		node.setAttribute('title', nodeTitle);
 		tooltipRef.$destroy();
-
-		// HACKY FIX: remove old tooltips
-		let tooltips = document.querySelectorAll('.tooltip-container');
-		if (tooltips.length > 0) {
-			for (var t of tooltips) {
-				t.remove();
-			}
-		}
 	}
 
-	element.addEventListener('mouseover', mouseOver);
-	element.addEventListener('mouseleave', mouseLeave);
-	element.addEventListener('mousemove', mouseMove);
+	node.addEventListener('mouseover', mouseOver);
+	node.addEventListener('mouseleave', mouseLeave);
+	node.addEventListener('mousemove', mouseMove);
 
 	return {
-		update(params) {
-			// will run any time any of the input params change. Make it reactive
-			tooltipProps = params.props;
-
-			// clear old event listeners
-			element.removeEventListener('mouseover', mouseOver);
-			element.removeEventListener('mouseleave', mouseLeave);
-			element.removeEventListener('mousemove', mouseMove);
-
-			// add updated ones
-			element.addEventListener('mouseover', mouseOver);
-			element.addEventListener('mouseleave', mouseLeave);
-			element.addEventListener('mousemove', mouseMove);
-		},
-
 		destroy() {
-			element.removeEventListener('mouseover', mouseOver);
-			element.removeEventListener('mouseleave', mouseLeave);
-			element.removeEventListener('mousemove', mouseMove);
+			node.removeEventListener('mouseover', mouseOver);
+			node.removeEventListener('mouseleave', mouseLeave);
+			node.removeEventListener('mousemove', mouseMove);
 		}
 	};
-}
+};
