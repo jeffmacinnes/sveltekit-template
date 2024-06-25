@@ -34,10 +34,20 @@ body {
 	font-family: 'Inter', sans-serif;
 	font-style: normal;
 	font-size: 1.6rem;
+	margin: 0;
 	color: var(--color-g1);
 	letter-spacing: 0.005em;
 	box-sizing: border-box;
 	overflow-x: hidden;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+* {
+	box-sizing: border-box;
 }
 
 h1 {

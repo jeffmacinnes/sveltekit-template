@@ -7,25 +7,25 @@ Usage:
     use=tooltip={{
       component: MyTooltip,
       props: {
-        title: 'My Custom Tooltip'
+        text: 'tooltip text',
+        placement: 'top',
+				strategy: 'fixed' // or 'absolute',
         ...
       }
     }}
   > Hover me </div>
 
-The action will handle the positioning of the tooltip using Popper.js. Set the popper 
-options in here to change where and how the tooltip gets positioned. Full list of popper options
-can be found: https://popper.js.org/docs/v2/constructors/
+The action will handle the creation, and destruction of a tooltip when the node is hovered. 
 
-At minimum, the custom tooltip component MUST have the following features 
-(note the id attribute of wrapper. This must be 'tooltip', since it is referenced by id in the code below):
+At minimum, the custom tooltip component MUST have the following features. 
+See components/Tooltips/TooltipSimple.svelte for example 
 
 <script>
   export let x;
   export let y;
 </script>
 
-<div id="tooltip" style="top: {y}px; left: {x}px;">
+<div style="top: {y}px; left: {x}px;">
   TOOL TIP CONTENT
 </div>
 
@@ -61,8 +61,7 @@ const getCoords = (event, strategy) => {
 export const tooltip = (node, params) => {
 	const tooltipComponent = params.component;
 	const tooltipProps = params.props || {};
-	const config = params.config || {};
-	const strategy = config.strategy || 'fixed';
+	const strategy = tooltipProps.strategy || 'fixed';
 
 	let tooltipRef;
 	let nodeTitle;
@@ -86,7 +85,7 @@ export const tooltip = (node, params) => {
 	};
 
 	function mouseMove(event) {
-		if (config?.strategy === 'fixed') return; // don't do anything if strategy is fixed
+		if (strategy === 'fixed') return; // don't do anything if strategy is fixed
 		// update the tooltip position
 		let coords = getCoords(event, strategy);
 		tooltipRef.$set({
@@ -96,8 +95,6 @@ export const tooltip = (node, params) => {
 	}
 
 	function mouseLeave() {
-		let tooltip = document.querySelector('#tooltip');
-		tooltip.removeAttribute('data-show');
 		node.setAttribute('title', nodeTitle);
 		tooltipRef.$destroy();
 	}
