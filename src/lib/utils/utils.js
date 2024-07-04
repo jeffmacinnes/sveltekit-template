@@ -180,6 +180,34 @@ export const hex2rgb = (hex) => {
 	return [r, g, b];
 };
 
+export const hexWithOpacity = (hex, opacity) => {
+	// Ensure the hex string starts with a #
+	if (hex.charAt(0) === '#') {
+		hex = hex.slice(1);
+	}
+
+	// Check if the hex string is valid
+	if (hex.length !== 3 && hex.length !== 6) {
+		throw new Error('Invalid hex color format');
+	}
+
+	// Convert 3-digit hex to 6-digit hex
+	if (hex.length === 3) {
+		hex = hex
+			.split('')
+			.map((char) => char + char)
+			.join('');
+	}
+
+	// Convert opacity from 0-1 to 0-255 and then to a 2-character hex
+	const alpha = Math.round(opacity * 255)
+		.toString(16)
+		.padStart(2, '0')
+		.toUpperCase();
+
+	return `#${hex}${alpha}`;
+};
+
 export const rgbToHex = ([r, g, b]) => {
 	// Ensure that the RGB values are within the valid range (0-255)
 	r = Math.max(0, Math.min(255, r));
