@@ -1,3 +1,9 @@
+// === BROWSER FUNCTIONS ============================================================
+export const isMobileDevice = () => {
+	// return true if user agent indicates a mobile device
+	return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 // === ARRAY FUNCTIONS ============================================================
 // return a value from an object at the given path (i.e. 'a.b.c' => obj[a][b][c])
 export const getNestedProperty = (obj, path) => {
@@ -209,6 +215,7 @@ export const rgbToHex = ([r, g, b]) => {
 export const formatCurrency = (value, decimalPts = 0) => {
 	// return string with appropriate suffix for currency (K, M, B, T, etc);
 	value = Math.round(value);
+
 	let nDigits = `${value}`.length;
 	let suffix = '';
 	if (nDigits > 3 && nDigits <= 6) {
