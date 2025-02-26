@@ -78,6 +78,18 @@ export const randIntBw = (min, max) => {
 	return Math.floor(Math.random() * (max - min + 1) + min);
 };
 
+// get random value from normal distribution
+export const randNorm = (mu = 0, sigma = 1) => {
+	let u1 = Math.random();
+	let u2 = Math.random();
+
+	// Box-Muller transform
+	let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+
+	// Scale and shift to get desired mean and std dev
+	return z0 * sigma + mu;
+};
+
 // get random value from supplied array
 export const randFromArr = (arr) => {
 	return arr[Math.floor(Math.random() * arr.length)];
