@@ -9,8 +9,11 @@ Usage:
       props: {
         text: 'tooltip text',
         placement: 'top',
-				strategy: 'fixed' // or 'absolute',
+        strategy: 'fixed', // or absolute
         ...
+      },
+      config: {
+       
       }
     }}
   > Hover me </div>
@@ -59,12 +62,12 @@ const getCoords = (event, strategy) => {
 };
 
 export const tooltip = (node, params) => {
-	const tooltipComponent = params.component;
-	const tooltipProps = params.props || {};
-	const strategy = tooltipProps.strategy || 'fixed';
-
+	let tooltipComponent = params.component;
+	let tooltipProps = params.props || {};
+	let strategy = tooltipProps.strategy || 'fixed';
 	let tooltipRef;
 	let nodeTitle;
+	let isTooltipVisible = false;
 
 	const mouseOver = (event) => {
 		// --- Create Tooltip
@@ -73,15 +76,18 @@ export const tooltip = (node, params) => {
 		node.removeAttribute('title');
 
 		// create instance of tooltip component
+		let tooltipStrategyProps = { ...tooltipProps };
+		delete tooltipStrategyProps.strategy;
 		let coords = getCoords(event, strategy);
 		tooltipRef = new tooltipComponent({
 			props: {
-				...tooltipProps,
+				...tooltipStrategyProps,
 				x: coords.x,
 				y: coords.y
 			},
 			target: document.body
 		});
+		isTooltipVisible = true;
 	};
 
 	function mouseMove(event) {
@@ -96,7 +102,22 @@ export const tooltip = (node, params) => {
 
 	function mouseLeave() {
 		node.setAttribute('title', nodeTitle);
-		tooltipRef.$destroy();
+		if (tooltipRef) {
+			tooltipRef.$destroy();
+			tooltipRef = null;
+		}
+		isTooltipVisible = false;
+	}
+
+	function updateTooltipContents() {
+		// If the tooltip is currently visible, update its contents
+		if (isTooltipVisible && tooltipRef) {
+			let tooltipStrategyProps = { ...tooltipProps };
+			delete tooltipStrategyProps.strategy;
+
+			// Update the tooltip properties
+			tooltipRef.$set(tooltipStrategyProps);
+		}
 	}
 
 	node.addEventListener('mouseover', mouseOver);
@@ -104,6 +125,15 @@ export const tooltip = (node, params) => {
 	node.addEventListener('mousemove', mouseMove);
 
 	return {
+		update(newParams) {
+			// Update the component and props references
+			tooltipComponent = newParams.component;
+			tooltipProps = newParams.props || {};
+			strategy = tooltipProps.strategy || 'fixed';
+
+			// Update the tooltip if it's currently visible
+			updateTooltipContents();
+		},
 		destroy() {
 			node.removeEventListener('mouseover', mouseOver);
 			node.removeEventListener('mouseleave', mouseLeave);

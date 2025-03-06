@@ -1,26 +1,28 @@
 <script>
-	/* Generic Tooltip that shows an icon and displays a component on hover */
 	import { tooltip } from '$lib/actions/tooltip';
-	import tooltipIcon from '$lib/assets/icons/icon_tooltip.svg';
-	import TooltipPopup from './TooltipSimple.svelte';
+	import tooltipIcon from '$lib/assets/icon_tooltip.svg';
+	import TooltipPopup from '$lib/components/ToolTips/TooltipSimple.svelte';
 
 	export let text = '';
 	export let placement = 'right';
 	export let iconSize = '1.5rem';
-</script>
 
-<img
-	src={tooltipIcon}
-	alt="Tooltip"
-	style={`width: ${iconSize}; height: ${iconSize};`}
-	use:tooltip={{
+	// Create a reactive statement to update the tooltip props when text changes
+	$: tooltipProps = {
 		component: TooltipPopup,
 		props: {
 			text,
 			placement,
 			strategy: 'fixed'
 		}
-	}}
+	};
+</script>
+
+<img
+	src={tooltipIcon}
+	alt="Tooltip"
+	style={`width: ${iconSize}; height: ${iconSize};`}
+	use:tooltip={tooltipProps}
 />
 
 <style lang="scss">

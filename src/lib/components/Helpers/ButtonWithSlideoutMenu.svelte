@@ -15,6 +15,9 @@
 	export let closeOnClickOutside = true;
 	export let gap = '8px'; // Gap between button and menu
 
+	let slideOutMenuContentRef;
+	let buttonRef;
+
 	const dispatch = createEventDispatcher();
 
 	function toggleMenu() {
@@ -31,10 +34,10 @@
 		// If click is outside the menu and outside the button
 		if (
 			closeOnClickOutside &&
-			menu &&
-			!menu.contains(event.target) &&
-			button &&
-			!button.contains(event.target)
+			slideOutMenuContentRef &&
+			!slideOutMenuContentRef.contains(event.target) &&
+			buttonRef &&
+			!buttonRef.contains(event.target)
 		) {
 			isOpen = false;
 			dispatch('toggle', { isOpen });
@@ -100,7 +103,7 @@
 <svelte:window on:click={handleClickOutside} />
 
 <div class="slideout-menu-container" class:vertical={position === 'top' || position === 'bottom'}>
-	<div id="slideout-menu-button" class="menu-button" on:click={toggleMenu}>
+	<div id="slideout-menu-button" class="menu-button" on:click={toggleMenu} bind:this={buttonRef}>
 		<slot name="button">
 			<!-- Default button if none provided -->
 			<button>Menu</button>
@@ -117,6 +120,7 @@
 			class:right={position === 'right'}
 			style={getMenuPositionStyle()}
 			transition:fly={getFlyParams()}
+			bind:this={slideOutMenuContentRef}
 		>
 			<slot name="menu">
 				<!-- Default menu content if none provided -->
