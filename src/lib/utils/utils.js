@@ -68,6 +68,11 @@ export const shuffle = (array) => {
 };
 
 // === GENERAL MATH FUNCTIONS ====================================================
+// test if number is between range (inclusive)
+export const isBetween = (val, min, max) => {
+	return val >= min && val <= max;
+};
+
 // get rand Float value between min, max (exclusive)
 export const randBw = (min, max) => {
 	return Math.random() * (max - min) + min;
@@ -162,11 +167,6 @@ export const getRandomColor = () => {
 	return color;
 };
 
-// test if number is between range (inclusive)
-export const isBetween = (val, min, max) => {
-	return val >= min && val <= max;
-};
-
 export const hex2rgb = (hex) => {
 	// Remove the hash character if it's included
 	hex = hex.replace('#', '');
@@ -221,6 +221,31 @@ export const rgbToHex = ([r, g, b]) => {
 
 	// Concatenate the hexadecimal values and return
 	return '#' + hexR + hexG + hexB;
+};
+
+export const rgbStringToRGB = (rgbString) => {
+	// Remove 'rgb(' and ')' and split by comma
+	const cleanString = rgbString
+		.replace('rgb(', '')
+		.replace(')', '')
+		.split(',')
+		.map((value) => value.trim());
+
+	// Convert to numbers and validate
+	const rgbValues = cleanString.map((value) => {
+		const num = parseInt(value, 10);
+		if (isNaN(num) || num < 0 || num > 255) {
+			throw new Error(`Invalid RGB value: ${value}`);
+		}
+		return num;
+	});
+
+	// Ensure we have exactly 3 values
+	if (rgbValues.length !== 3) {
+		throw new Error('RGB string must contain exactly 3 values');
+	}
+
+	return rgbValues; // [r, g, b]
 };
 
 // === FORMATTING FUNCTIONS ============================================================

@@ -1,10 +1,11 @@
 <script>
 	/* Generic Buttons with Slideout Menu Component
-  Menu slides out fromthe button when clicked. You can feed 
-  it slots for "button" and "menu" for custom content. 
-  */
+Menu slides out from the button when clicked. You can feed 
+it slots for "button" and "menu" for custom content. 
+*/
 	import { fly } from 'svelte/transition';
 	import { createEventDispatcher } from 'svelte';
+	import closeButtonIcon from '$lib/assets/icons/icon_closeButton.svg';
 
 	// Props
 	export let isOpen = false;
@@ -14,6 +15,7 @@
 	export let transitionDuration = 300;
 	export let closeOnClickOutside = true;
 	export let gap = '8px'; // Gap between button and menu
+	export let isMobile = true; // For mobile view
 
 	let slideOutMenuContentRef;
 	let buttonRef;
@@ -27,9 +29,6 @@
 
 	function handleClickOutside(event) {
 		if (!isOpen) return;
-
-		const menu = document.getElementById('slideout-menu-content');
-		const button = document.getElementById('slideout-menu-button');
 
 		// If click is outside the menu and outside the button
 		if (
@@ -48,19 +47,21 @@
 	function getFlyParams() {
 		const params = { duration: transitionDuration, x: 0, y: 0 };
 
-		switch (position) {
-			case 'left':
-				params.x = 20;
-				break;
-			case 'right':
-				params.x = -20;
-				break;
-			case 'top':
-				params.y = 20;
-				break;
-			case 'bottom':
-				params.y = -20;
-				break;
+		if (!isMobile) {
+			switch (position) {
+				case 'left':
+					params.x = 20;
+					break;
+				case 'right':
+					params.x = -20;
+					break;
+				case 'top':
+					params.y = 20;
+					break;
+				case 'bottom':
+					params.y = -20;
+					break;
+			}
 		}
 
 		return params;
@@ -68,6 +69,20 @@
 
 	// Get menu position styles based on position prop
 	function getMenuPositionStyle() {
+		if (isMobile) {
+			return `
+							position: fixed;
+							top: 0;
+							left: 0;
+							width: 100%;
+							height: 100vh;
+							z-index: 100;
+							border-radius: 0;
+							background-color: white;
+							overflow-y: auto;
+					`;
+		}
+
 		const styles = {
 			width: `${menuWidth}px`,
 			height: menuHeight ? `${menuHeight}px` : 'auto'
@@ -105,7 +120,6 @@
 <div class="slideout-menu-container" class:vertical={position === 'top' || position === 'bottom'}>
 	<div id="slideout-menu-button" class="menu-button" on:click={toggleMenu} bind:this={buttonRef}>
 		<slot name="button">
-			<!-- Default button if none provided -->
 			<button>Menu</button>
 		</slot>
 	</div>
@@ -114,14 +128,23 @@
 		<div
 			id="slideout-menu-content"
 			class="menu-content"
-			class:top={position === 'top'}
-			class:bottom={position === 'bottom'}
-			class:left={position === 'left'}
-			class:right={position === 'right'}
+			class:mobile={isMobile}
+			class:top={position === 'top' && !isMobile}
+			class:bottom={position === 'bottom' && !isMobile}
+			class:left={position === 'left' && !isMobile}
+			class:right={position === 'right' && !isMobile}
 			style={getMenuPositionStyle()}
 			transition:fly={getFlyParams()}
 			bind:this={slideOutMenuContentRef}
 		>
+			<!-- Add close button to mobile-->
+			{#if isMobile}
+				<div class="mobile-menu-header">
+					<div class="mobile-close-button" on:click={toggleMenu}>
+						<img src={closeButtonIcon} alt="Close menu" />
+					</div>
+				</div>
+			{/if}
 			<slot name="menu">
 				<!-- Default menu content if none provided -->
 				<ul>
@@ -134,7 +157,7 @@
 	{/if}
 </div>
 
-<style>
+<style lang="scss">
 	.slideout-menu-container {
 		position: relative;
 		display: inline-flex;
@@ -148,6 +171,7 @@
 	.menu-button {
 		z-index: 1;
 		position: relative;
+		cursor: pointer;
 	}
 
 	.menu-content {
@@ -160,5 +184,31 @@
 		z-index: 10;
 		max-height: 80vh;
 		overflow-y: auto;
+	}
+
+	.mobile-menu-header {
+		width: 100%;
+		display: flex;
+		justify-content: flex-end;
+		cursor: pointer;
+
+		img {
+			width: 60px;
+			height: 60px;
+		}
+	}
+
+	.menu-content.mobile {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		border-radius: 0;
+		box-shadow: none;
+		padding: 20px;
+		max-height: none;
+		overflow-y: auto;
+		z-index: 100;
 	}
 </style>
