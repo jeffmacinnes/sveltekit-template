@@ -1,11 +1,12 @@
 <script>
 	/* Generic Buttons with Slideout Menu Component
 Menu slides out from the button when clicked. You can feed 
-it slots for "button" and "menu" for custom content. 
+it slots for "button" and "menu" for custom content. On mobile, 
+the menu takes the full screen and appears at top of DOM
 */
 	import { fly } from 'svelte/transition';
-	import { createEventDispatcher } from 'svelte';
-	import closeButtonIcon from '$lib/assets/icons/icon_closeButton.svg';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import closeButtonIcon from '$lib/assets/icon_closeButton.svg';
 
 	// Props
 	export let isOpen = false;
@@ -15,12 +16,42 @@ it slots for "button" and "menu" for custom content.
 	export let transitionDuration = 300;
 	export let closeOnClickOutside = true;
 	export let gap = '8px'; // Gap between button and menu
-	export let isMobile = true; // For mobile view
 
 	let slideOutMenuContentRef;
 	let buttonRef;
+	let screenW;
+	let mobileMenuContainer;
+	let desktopMenuW = menuWidth;
 
 	const dispatch = createEventDispatcher();
+
+	// Create a portal for mobile menu
+	function createMobileMenuPortal() {
+		if (!mobileMenuContainer) {
+			mobileMenuContainer = document.createElement('div');
+			mobileMenuContainer.id = 'mobile-menu-portal';
+			mobileMenuContainer.style.position = 'relative';
+			mobileMenuContainer.style.zIndex = '99999'; // Very high z-index
+			document.body.appendChild(mobileMenuContainer);
+		}
+		return mobileMenuContainer;
+	}
+
+	// Function to add menu to portal
+	function addToPortal(node) {
+		if (isMobile && isOpen) {
+			const portal = createMobileMenuPortal();
+			portal.appendChild(node);
+
+			return {
+				destroy() {
+					if (node.parentNode === portal) {
+						portal.removeChild(node);
+					}
+				}
+			};
+		}
+	}
 
 	function toggleMenu() {
 		isOpen = !isOpen;
@@ -38,6 +69,7 @@ it slots for "button" and "menu" for custom content.
 			buttonRef &&
 			!buttonRef.contains(event.target)
 		) {
+			console.log('buttonwithslideoutmenu closing');
 			isOpen = false;
 			dispatch('toggle', { isOpen });
 		}
@@ -62,6 +94,9 @@ it slots for "button" and "menu" for custom content.
 					params.y = -20;
 					break;
 			}
+		} else {
+			// For mobile, slide up from bottom
+			params.y = 20;
 		}
 
 		return params;
@@ -71,16 +106,18 @@ it slots for "button" and "menu" for custom content.
 	function getMenuPositionStyle() {
 		if (isMobile) {
 			return `
-							position: fixed;
-							top: 0;
-							left: 0;
-							width: 100%;
-							height: 100vh;
-							z-index: 100;
-							border-radius: 0;
-							background-color: white;
-							overflow-y: auto;
-					`;
+				position: fixed;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				width: 100%;
+				height: 100%;
+				z-index: 99999;
+				border-radius: 0;
+				background-color: white;
+				overflow-y: auto;
+			`;
 		}
 
 		const styles = {
@@ -113,20 +150,24 @@ it slots for "button" and "menu" for custom content.
 			.map(([key, value]) => `${key}: ${value}`)
 			.join('; ');
 	}
+
+	$: isMobile = screenW < 768; // Adjust this value based on your design breakpoints
+	$: menuW = isMobile ? screenW : menuWidth; // Full width on mobile
 </script>
 
-<svelte:window on:click={handleClickOutside} />
+<svelte:window on:click={handleClickOutside} bind:innerWidth={screenW} />
 
 <div class="slideout-menu-container" class:vertical={position === 'top' || position === 'bottom'}>
+	<!-- BUTTON TO OPEN/CLOSE MENU -->
 	<div id="slideout-menu-button" class="menu-button" on:click={toggleMenu} bind:this={buttonRef}>
 		<slot name="button">
 			<button>Menu</button>
 		</slot>
 	</div>
 
+	<!-- MENU CONTENTS -->
 	{#if isOpen}
 		<div
-			id="slideout-menu-content"
 			class="menu-content"
 			class:mobile={isMobile}
 			class:top={position === 'top' && !isMobile}
@@ -136,22 +177,14 @@ it slots for "button" and "menu" for custom content.
 			style={getMenuPositionStyle()}
 			transition:fly={getFlyParams()}
 			bind:this={slideOutMenuContentRef}
+			use:addToPortal={isMobile}
 		>
-			<!-- Add close button to mobile-->
-			{#if isMobile}
-				<div class="mobile-menu-header">
-					<div class="mobile-close-button" on:click={toggleMenu}>
-						<img src={closeButtonIcon} alt="Close menu" />
-					</div>
-				</div>
-			{/if}
+			<div class="close-button" on:click={toggleMenu}>
+				<img src={closeButtonIcon} alt="Close menu" />
+			</div>
+
 			<slot name="menu">
-				<!-- Default menu content if none provided -->
-				<ul>
-					<li>Menu Item 1</li>
-					<li>Menu Item 2</li>
-					<li>Menu Item 3</li>
-				</ul>
+				<p>Default Menu Content</p>
 			</slot>
 		</div>
 	{/if}
@@ -181,34 +214,38 @@ it slots for "button" and "menu" for custom content.
 		border-radius: 4px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		padding: 10px;
+		padding-top: 20px;
 		z-index: 10;
 		max-height: 80vh;
 		overflow-y: auto;
-	}
 
-	.mobile-menu-header {
-		width: 100%;
-		display: flex;
-		justify-content: flex-end;
-		cursor: pointer;
-
-		img {
-			width: 60px;
-			height: 60px;
+		&.mobile {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border-radius: 0;
+			box-shadow: none;
+			padding: 20px;
+			max-height: none;
+			overflow-y: auto;
+			z-index: 99999;
 		}
 	}
 
-	.menu-content.mobile {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		border-radius: 0;
-		box-shadow: none;
-		padding: 20px;
-		max-height: none;
-		overflow-y: auto;
-		z-index: 100;
+	.close-button {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		width: 12px;
+		height: 12px;
+		cursor: pointer;
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
 	}
 </style>
