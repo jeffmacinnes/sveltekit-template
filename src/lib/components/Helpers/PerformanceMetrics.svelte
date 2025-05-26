@@ -75,4 +75,12 @@
 	});
 </script>
 
-<div bind:this={statsContainer}></div>
+<div id="performance-metrics" bind:this={statsContainer}></div>
+
+<style lang="scss">
+	#performance-metrics {
+		position: sticky;
+		top: 0;
+		z-index: 9999999999; /* Ensure it appears above other content */
+	}
+</style>
