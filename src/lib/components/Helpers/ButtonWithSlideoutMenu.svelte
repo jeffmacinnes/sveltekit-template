@@ -10,6 +10,7 @@ the menu takes the full screen and appears at top of DOM
 
 	// Props
 	export let isOpen = false;
+	export let isMobile = false; // Set to true for mobile devices
 	export let menuWidth = 200;
 	export let menuHeight = null; // null defaults to 'auto'
 	export let position = 'bottom'; // 'left', 'right', 'top', 'bottom'
@@ -22,6 +23,7 @@ the menu takes the full screen and appears at top of DOM
 	let screenW;
 	let mobileMenuContainer;
 	let desktopMenuW = menuWidth;
+	let menuAdjusted = false;
 
 	const dispatch = createEventDispatcher();
 
@@ -69,7 +71,6 @@ the menu takes the full screen and appears at top of DOM
 			buttonRef &&
 			!buttonRef.contains(event.target)
 		) {
-			console.log('buttonwithslideoutmenu closing');
 			isOpen = false;
 			dispatch('toggle', { isOpen });
 		}
@@ -102,7 +103,39 @@ the menu takes the full screen and appears at top of DOM
 		return params;
 	}
 
-	// Get menu position styles based on position prop
+	// Function to check and adjust menu position after it's visible
+	function checkMenuPosition() {
+		if (!isMobile && slideOutMenuContentRef && isOpen) {
+			const menuRect = slideOutMenuContentRef.getBoundingClientRect();
+			const windowHeight = window.innerHeight;
+			const windowWidth = window.innerWidth;
+
+			if (position === 'left' || position === 'right') {
+				// Check if menu extends beyond viewport bottom
+				if (menuRect.bottom > windowHeight) {
+					const adjustment = menuRect.bottom - windowHeight;
+					slideOutMenuContentRef.style.top = `calc(0px - ${adjustment}px)`;
+				}
+				// Check if menu extends beyond viewport top
+				else if (menuRect.top < 0) {
+					slideOutMenuContentRef.style.top = '0px';
+				}
+			} else if (position === 'top' || position === 'bottom') {
+				// Check if menu extends beyond viewport right
+				if (menuRect.right > windowWidth) {
+					const adjustment = menuRect.right - windowWidth;
+					slideOutMenuContentRef.style.left = `calc(50% - ${adjustment}px)`;
+				}
+				// Check if menu extends beyond viewport left
+				else if (menuRect.left < 0) {
+					slideOutMenuContentRef.style.left = '0px';
+					slideOutMenuContentRef.style.transform = 'none';
+				}
+			}
+		}
+	}
+
+	// Get menu position styles based on position prop - keep original implementation
 	function getMenuPositionStyle() {
 		if (isMobile) {
 			return `
@@ -151,11 +184,27 @@ the menu takes the full screen and appears at top of DOM
 			.join('; ');
 	}
 
-	$: isMobile = screenW < 768; // Adjust this value based on your design breakpoints
+	// Watch for isOpen changes to trigger position check
+	$: if (isOpen) {
+		menuAdjusted = false;
+		// Use a small delay to ensure the menu has been rendered
+		setTimeout(() => {
+			checkMenuPosition();
+			menuAdjusted = true;
+		}, 50);
+	}
+
+	// Handle window resize to readjust menu position
+	function handleResize() {
+		if (isOpen) {
+			checkMenuPosition();
+		}
+	}
+
 	$: menuW = isMobile ? screenW : menuWidth; // Full width on mobile
 </script>
 
-<svelte:window on:click={handleClickOutside} bind:innerWidth={screenW} />
+<svelte:window on:click={handleClickOutside} bind:innerWidth={screenW} on:resize={handleResize} />
 
 <div class="slideout-menu-container" class:vertical={position === 'top' || position === 'bottom'}>
 	<!-- BUTTON TO OPEN/CLOSE MENU -->
@@ -213,8 +262,6 @@ the menu takes the full screen and appears at top of DOM
 		border: 1px solid #ddd;
 		border-radius: 4px;
 		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-		padding: 10px;
-		padding-top: 20px;
 		z-index: 10;
 		max-height: 80vh;
 		overflow-y: auto;
