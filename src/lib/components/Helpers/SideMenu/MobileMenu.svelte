@@ -7,12 +7,35 @@
 	export let topPadding = 50;
 	export let toggleButtonH = 45; // how much space to use for toggle button at top
 
-	let menuOpen = false;
-	let translateH = menuOpen ? topPadding : containerH - toggleButtonH;
 	const toggleMenu = () => {
 		menuOpen = !menuOpen;
 		translateH = menuOpen ? topPadding : containerH - toggleButtonH; // if closed, translate down so just the controls are visibile
 	};
+
+	let menuOpen = false;
+	let mobile_spacing = 0;
+	$: bottomOffset = isPhone ? mobile_spacing : 0;
+	$: translateH = menuOpen ? topPadding : containerH - toggleButtonH - bottomOffset;
+
+	let isPhone = false;
+	onMount(() => {
+		// Initial screen width check
+		let screenWidth = window.innerWidth;
+		isPhone = screenWidth < 480;
+
+		// Add resize listener
+		const handleResize = () => {
+			screenWidth = window.innerWidth;
+			isPhone = screenWidth < 480;
+		};
+
+		window.addEventListener('resize', handleResize);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	});
 </script>
 
 <article class="menu-wrapper">
@@ -25,6 +48,9 @@
 				{menuOpen ? 'Close Menu' : 'Open Menu'}
 			</button>
 		</div>
+		{#if isPhone && !menuOpen}
+			<div class="spacer" style="height: {mobile_spacing}px" />
+		{/if}
 		<div class="menu-content" style="height: calc(100% - {toggleButtonH}px)">
 			<slot />
 		</div>
@@ -50,6 +76,7 @@
 		transition: transform 0.3s ease-in-out;
 		pointer-events: auto;
 		box-shadow: var(--shadow-pse-dark);
+		border: solid 1px black;
 	}
 
 	.controls-container {
@@ -68,14 +95,19 @@
 		text-transform: uppercase;
 		font-size: 1.2rem;
 		letter-spacing: 0.1rem;
-		color: var(--color-base);
-		border: solid 1px var(--color-base);
+		color: var(--color-white);
+		background-color: var(--color-green4);
+		border: solid 1px black;
 		border-radius: 0.5rem;
 		cursor: pointer;
 	}
 
 	.menu-content {
 		overflow: auto;
+	}
+
+	.spacer {
+		width: 100%;
 	}
 
 	@media (max-width: 768px) {
