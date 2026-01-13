@@ -9,6 +9,7 @@ Project description
 - camelCase naming
 - Svelte 5 syntax
 - Use `$lib` aliases for imports
+- Use scss preprocessor
 - Composition over large components
 
 ## Commands
