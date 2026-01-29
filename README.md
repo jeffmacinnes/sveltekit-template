@@ -1,38 +1,100 @@
-# create-svelte
+# SvelteKit Template
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+A starter template for SvelteKit projects using Svelte 5, SCSS, and D3.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **Svelte 5** with runes (`$state`, `$derived`, `$effect`, `$props`)
+- **SvelteKit 2** for routing and SSR
+- **Vite 6** for fast builds
+- **SCSS** preprocessing
+- **D3** for data visualization
+- **ESLint 9** with flat config + Prettier
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Getting Started
 
 ```bash
+# Install dependencies
+npm install
+
+# Start dev server
 npm run dev
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
+# Build for production
 npm run build
+
+# Preview production build
+npm run preview
 ```
 
-You can preview the production build with `npm run preview`.
+## Scripts
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+| Command           | Description                         |
+| ----------------- | ----------------------------------- |
+| `npm run dev`     | Start development server            |
+| `npm run build`   | Build for production                |
+| `npm run preview` | Preview production build            |
+| `npm run lint`    | Check code with ESLint and Prettier |
+| `npm run format`  | Auto-fix formatting issues          |
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   ├── actions/       # Svelte actions (tooltip, inView, etc.)
+│   ├── assets/        # Images and static assets
+│   ├── components/    # Reusable components
+│   ├── stores/        # Svelte stores
+│   ├── styles/        # Global CSS/SCSS
+│   └── utils/         # Utility functions
+└── routes/            # SvelteKit routes
+```
+
+## Included Components
+
+- **Accordion** - Expandable content sections
+- **ButtonWithSlideoutMenu** - Button with dropdown menu
+- **SlidingSidebar** - Collapsible sidebar navigation
+- **SideMenu** - Responsive side menu (desktop/mobile)
+- **Tooltip** - Hover tooltips with positioning
+- **ColorSwatches / Legend** - D3 color scale visualizations
+- **SearchBar** - Expandable search with filtering
+- **PasswordModal** - Simple authentication modal
+
+## Svelte 5 Quick Reference
+
+```svelte
+<script>
+	// Props
+	let { name = 'World', children } = $props();
+
+	// State
+	let count = $state(0);
+
+	// Derived
+	let doubled = $derived(count * 2);
+
+	// Effects
+	$effect(() => {
+		console.log('count is now', count);
+	});
+</script>
+
+<button onclick={() => count++}>
+	Clicked {count} times
+</button>
+
+{@render children?.()}
+```
+
+## Deployment
+
+This template uses `@sveltejs/adapter-auto`. For specific platforms, install the appropriate adapter:
+
+- Vercel: `@sveltejs/adapter-vercel`
+- Netlify: `@sveltejs/adapter-netlify`
+- Node: `@sveltejs/adapter-node`
+- Static: `@sveltejs/adapter-static`
+
+See [SvelteKit adapters documentation](https://svelte.dev/docs/kit/adapters) for more options.

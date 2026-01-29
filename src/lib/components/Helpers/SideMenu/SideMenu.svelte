@@ -4,21 +4,24 @@
 	import DesktopMenu from './DesktopMenu.svelte';
 	import MobileMenu from './MobileMenu.svelte';
 
-	export let containerW = 100;
-	export let containerH = 100;
-	export let isMobile = false;
-	export let desktopW = 250;
-	export let side = 'left'; // Accepts: "left", "right"
+	let {
+		containerW = 100,
+		containerH = 100,
+		isMobile = false,
+		desktopW = 250,
+		side = 'left',
+		children
+	} = $props();
 </script>
 
 <div class="menu-wrapper" style:width={`${containerW}px`} style:height={`${containerH}px`}>
 	{#if !isMobile}
 		<DesktopMenu {side} {desktopW}>
-			<slot />
+			{@render children?.()}
 		</DesktopMenu>
 	{:else}
 		<MobileMenu {containerH} topPadding={20} toggleButtonH={50}>
-			<slot />
+			{@render children?.()}
 		</MobileMenu>
 	{/if}
 </div>

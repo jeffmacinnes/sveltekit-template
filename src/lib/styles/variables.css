@@ -4,13 +4,13 @@
  */
 
 :root {
-  --color-black: #000000;
-  --color-white: #ffffff;
-  --color-c1: #ee644d;
-  --color-c2: #97a62c;
-  --color-g1: #3c3c3c;
-  --color-g2: #737373;
-  --color-g3: #b7b7b7;
-  --color-g4: #dcdcdc;
-  --color-g5: #f4f4f4;
+	--color-black: #000000;
+	--color-white: #ffffff;
+	--color-c1: #ee644d;
+	--color-c2: #97a62c;
+	--color-g1: #3c3c3c;
+	--color-g2: #737373;
+	--color-g3: #b7b7b7;
+	--color-g4: #dcdcdc;
+	--color-g5: #f4f4f4;
 }

@@ -1,29 +1,25 @@
 <script>
 	/* Menu that slides up from the bottom of the screen */
-	import { fly } from 'svelte/transition';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
 
-	export let containerH = 100;
-	export let topPadding = 50;
-	export let toggleButtonH = 45; // how much space to use for toggle button at top
+	let { containerH = 100, topPadding = 50, toggleButtonH = 45, children } = $props();
 
 	const toggleMenu = () => {
 		menuOpen = !menuOpen;
-		translateH = menuOpen ? topPadding : containerH - toggleButtonH; // if closed, translate down so just the controls are visibile
+		translateH = menuOpen ? topPadding : containerH - toggleButtonH;
 	};
 
-	let menuOpen = false;
+	let menuOpen = $state(false);
 	let mobile_spacing = 0;
-	$: bottomOffset = isPhone ? mobile_spacing : 0;
-	$: translateH = menuOpen ? topPadding : containerH - toggleButtonH - bottomOffset;
+	let isPhone = $state(false);
 
-	let isPhone = false;
+	let bottomOffset = $derived(isPhone ? mobile_spacing : 0);
+	let translateH = $derived(menuOpen ? topPadding : containerH - toggleButtonH - bottomOffset);
+
 	onMount(() => {
-		// Initial screen width check
 		let screenWidth = window.innerWidth;
 		isPhone = screenWidth < 480;
 
-		// Add resize listener
 		const handleResize = () => {
 			screenWidth = window.innerWidth;
 			isPhone = screenWidth < 480;
@@ -31,7 +27,6 @@
 
 		window.addEventListener('resize', handleResize);
 
-		// Cleanup
 		return () => {
 			window.removeEventListener('resize', handleResize);
 		};
@@ -44,15 +39,15 @@
 		style="height: {containerH - topPadding}px; transform: translateY({translateH}px"
 	>
 		<div class="controls-container" style="height: {toggleButtonH}px">
-			<button class="menu-button" on:click={toggleMenu}>
+			<button class="menu-button" onclick={toggleMenu}>
 				{menuOpen ? 'Close Menu' : 'Open Menu'}
 			</button>
 		</div>
 		{#if isPhone && !menuOpen}
-			<div class="spacer" style="height: {mobile_spacing}px" />
+			<div class="spacer" style="height: {mobile_spacing}px"></div>
 		{/if}
 		<div class="menu-content" style="height: calc(100% - {toggleButtonH}px)">
-			<slot />
+			{@render children?.()}
 		</div>
 	</div>
 </article>

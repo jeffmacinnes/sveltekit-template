@@ -2,8 +2,7 @@
 	/* Menu that slides up from the bottom of the screen */
 	import { fly } from 'svelte/transition';
 
-	export let side = 'left';
-	export let desktopW = 250;
+	let { side = 'left', desktopW = 250, children } = $props();
 
 	let transitionMag = side === 'left' ? -desktopW : desktopW;
 </script>
@@ -15,7 +14,7 @@
 	transition:fly={{ x: transitionMag, duration: 300 }}
 	style={`width: ${desktopW}px`}
 >
-	<slot />
+	{@render children?.()}
 </div>
 
 <style lang="scss">

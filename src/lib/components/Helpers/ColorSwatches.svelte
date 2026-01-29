@@ -1,20 +1,19 @@
 <script>
 	import { fade } from 'svelte/transition';
 
-	export let colorScale; // <-- d3.scaleOrdinal
-	export let show = false;
+	let { colorScale, show = false } = $props();
 
-	$: labels = colorScale.domain();
-	$: colors = colorScale.range();
+	let labels = $derived(colorScale.domain());
+	let colors = $derived(colorScale.range());
 </script>
 
 <div class="wrapper">
 	{#if show}
 		<div class="legend-container">
-			{#each colors as _, i}
+			{#each colors as color, i (i)}
 				<div transition:fade|global class="swatch-wrapper">
-					<div class="swatch" style:background-color={colors[i]} />
-					<div class="label" style:color={colors[i]}>{labels[i]}</div>
+					<div class="swatch" style:background-color={color}></div>
+					<div class="label" style:color>{labels[i]}</div>
 				</div>
 			{/each}
 		</div>
@@ -34,7 +33,6 @@
 		display: flex;
 		justify-content: space-evenly;
 		align-items: center;
-		// border: solid 1px red;
 	}
 
 	.swatch-wrapper {

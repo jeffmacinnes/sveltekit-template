@@ -2,21 +2,19 @@
 	import { onMount } from 'svelte';
 	import { positionTooltip } from './tooltipUtils';
 
-	export let x; // x,y will be reactive, updated from the tooltip action
-	export let y;
-	export let text = 'This is the text that will show up in the tooltip';
-	export let placement = 'right'; // 'top', 'bottom', 'left', 'right
-	export let offset = {
-		x: 25,
-		y: 25
-	};
+	let {
+		x = $bindable(),
+		y = $bindable(),
+		text = 'This is the text that will show up in the tooltip',
+		placement = $bindable('right'),
+		offset = { x: 25, y: 25 }
+	} = $props();
 
-	let winW;
-
-	let winH;
-	let top = 0;
-	let left = 0;
-	let ref;
+	let winW = $state();
+	let winH = $state();
+	let top = $state(0);
+	let left = $state(0);
+	let ref = $state();
 
 	const updatePlacement = () => {
 		if (!ref) return;
@@ -30,8 +28,13 @@
 		updatePlacement();
 	});
 
-	$: x, y, updatePlacement();
-	$: showTooltip = text.length > 0;
+	$effect(() => {
+		x;
+		y;
+		updatePlacement();
+	});
+
+	let showTooltip = $derived(text.length > 0);
 </script>
 
 <svelte:window bind:innerHeight={winH} bind:innerWidth={winW} />

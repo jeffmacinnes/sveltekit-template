@@ -2,43 +2,38 @@
 	/* This search bar component has a icon (must import), that once clicked on, will slide
   to the left and reveal a simple text input. Typing input will automatically filter a list
   of item appearing below the input field.
-  
   */
-	import { onMount } from 'svelte';
 	import SearchIcon from '$lib/assets/icon_search.svg';
 
-	// Search Bar Behaviors
-	let inputRef;
-	let isExpanded = false;
+	let inputRef = $state();
+	let isExpanded = $state(false);
+
 	const handleToggleSearchInput = () => {
-		if (isExpanded && searchQuery !== '') return; // only collapse if the input is empty
+		if (isExpanded && searchQuery !== '') return;
 		isExpanded = !isExpanded;
 		if (isExpanded) {
 			inputRef.focus();
 		}
 	};
 
-	// Search Query Behaviors
-	let searchQuery = '';
+	let searchQuery = $state('');
 	let items = ['apple', 'banana', 'cherry', 'date', 'fig', 'grape', 'kiwi'];
-	let filteredItems = [];
 
-	// Reactive statement to filter items based on search query
-	$: filteredItems = items.filter((item) => item.toLowerCase().includes(searchQuery.toLowerCase()));
-
-	// $: console.log('searchQuery', searchQuery, filteredItems);
+	let filteredItems = $derived(
+		items.filter((item) => item.toLowerCase().includes(searchQuery.toLowerCase()))
+	);
 </script>
 
 <div class="search-bar-container {isExpanded ? 'expanded' : ''}">
-	<button class="search-icon" on:click={handleToggleSearchInput}>
+	<button class="search-icon" onclick={handleToggleSearchInput}>
 		<img src={SearchIcon} alt="Search Icon" />
 	</button>
 	<input bind:this={inputRef} type="text" bind:value={searchQuery} />
 	{#if searchQuery}
 		<div class="dropdown">
 			{#if filteredItems.length > 0}
-				{#each filteredItems as item}
-					<div class="dropdown-item" on:click={() => selectItem(item)}>
+				{#each filteredItems as item (item)}
+					<div class="dropdown-item" onclick={() => (searchQuery = item)}>
 						{item}
 					</div>
 				{/each}

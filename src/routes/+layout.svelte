@@ -1,13 +1,15 @@
 <script>
 	import Header from './Header.svelte';
 	import '$lib/styles/app.css';
+
+	let { children } = $props();
 </script>
 
 <div class="app">
 	<Header />
 
 	<main>
-		<slot />
+		{@render children?.()}
 	</main>
 </div>
 

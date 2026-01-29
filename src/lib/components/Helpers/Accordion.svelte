@@ -1,14 +1,21 @@
 <script>
-	/* This is a generic accordion that has a header and body. Clicking the header 
-  will toggle the body open and closed. You can use slots to customize the header
+	/* This is a generic accordion that has a header and body. Clicking the header
+  will toggle the body open and closed. You can use snippets to customize the header
   and body to your hearts content
   */
 	import { slide } from 'svelte/transition';
-	export let isOpen = false;
-	export let isDisabled = false;
+
+	let {
+		isOpen = false,
+		isDisabled = false,
+		'accordion-header': accordionHeader,
+		'accordion-body': accordionBody
+	} = $props();
+
+	let open = $state(isOpen);
 
 	const toggleAccordion = () => {
-		isOpen = !isOpen;
+		open = !open;
 	};
 </script>
 
@@ -16,16 +23,16 @@
 	<div
 		class="accordion-header"
 		class:disabled={isDisabled}
-		on:click={toggleAccordion}
-		on:keypress={toggleAccordion}
+		onclick={toggleAccordion}
+		onkeypress={toggleAccordion}
 		role="button"
 		tabindex="0"
 	>
-		<slot name="accordion-header" />
+		{@render accordionHeader?.()}
 	</div>
-	{#if isOpen}
+	{#if open}
 		<div class="accordion-body" transition:slide>
-			<slot name="accordion-body" />
+			{@render accordionBody?.()}
 		</div>
 	{/if}
 </div>

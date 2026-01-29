@@ -1,25 +1,27 @@
 <script>
 	import { fly } from 'svelte/transition';
 
-	let isOpen = true;
+	let { children } = $props();
 
-	function toggleMenu() {
+	let isOpen = $state(true);
+
+	const toggleMenu = () => {
 		isOpen = !isOpen;
-	}
+	};
 </script>
 
 {#if isOpen}
 	<div class="menu {isOpen ? '' : 'closed'}" transition:fly={{ x: -400, duration: 500 }}>
-		<button class="close-button" on:click={toggleMenu}>
+		<button class="close-button" onclick={toggleMenu}>
 			<svg width="24" height="24">
 				<line id="top" x1="0" y1="0" x2="24" y2="24" />
 				<line id="bottom" x1="0" y1="24" x2="24" y2="0" />
 			</svg>
 		</button>
-		<slot />
+		{@render children?.()}
 	</div>
 {:else}
-	<button class="hamburger-button" on:click={toggleMenu}>
+	<button class="hamburger-button" onclick={toggleMenu}>
 		<svg width="32" height="24">
 			<line id="top" x1="0" y1="2" x2="32" y2="2" />
 			<line id="middle" x1="0" y1="12" x2="32" y2="12" />

@@ -1,46 +1,43 @@
 <script>
 	/* Generic Buttons with Slideout Menu Component
-Menu slides out from the button when clicked. You can feed 
-it slots for "button" and "menu" for custom content. On mobile, 
+Menu slides out from the button when clicked. You can feed
+it snippets for "button" and "menu" for custom content. On mobile,
 the menu takes the full screen and appears at top of DOM
 */
 	import { fly } from 'svelte/transition';
-	import { createEventDispatcher, onMount } from 'svelte';
 	import closeButtonIcon from '$lib/assets/icon_closeButton.svg';
 
-	// Props
-	export let isOpen = false;
-	export let isMobile = false; // Set to true for mobile devices
-	export let menuWidth = 200;
-	export let menuHeight = null; // null defaults to 'auto'
-	export let position = 'bottom'; // 'left', 'right', 'top', 'bottom'
-	export let transitionDuration = 300;
-	export let closeOnClickOutside = true;
-	export let gap = '8px'; // Gap between button and menu
+	let {
+		isOpen = $bindable(false),
+		isMobile = false,
+		menuWidth = 200,
+		menuHeight = null,
+		position = 'bottom',
+		transitionDuration = 300,
+		closeOnClickOutside = true,
+		gap = '8px',
+		button: buttonSnippet,
+		menu: menuSnippet,
+		ontoggle
+	} = $props();
 
-	let slideOutMenuContentRef;
-	let buttonRef;
-	let screenW;
-	let mobileMenuContainer;
-	let desktopMenuW = menuWidth;
-	let menuAdjusted = false;
+	let slideOutMenuContentRef = $state();
+	let buttonRef = $state();
+	let screenW = $state();
+	let mobileMenuContainer = $state();
 
-	const dispatch = createEventDispatcher();
-
-	// Create a portal for mobile menu
-	function createMobileMenuPortal() {
+	const createMobileMenuPortal = () => {
 		if (!mobileMenuContainer) {
 			mobileMenuContainer = document.createElement('div');
 			mobileMenuContainer.id = 'mobile-menu-portal';
 			mobileMenuContainer.style.position = 'relative';
-			mobileMenuContainer.style.zIndex = '99999'; // Very high z-index
+			mobileMenuContainer.style.zIndex = '99999';
 			document.body.appendChild(mobileMenuContainer);
 		}
 		return mobileMenuContainer;
-	}
+	};
 
-	// Function to add menu to portal
-	function addToPortal(node) {
+	const addToPortal = (node) => {
 		if (isMobile && isOpen) {
 			const portal = createMobileMenuPortal();
 			portal.appendChild(node);
@@ -53,17 +50,16 @@ the menu takes the full screen and appears at top of DOM
 				}
 			};
 		}
-	}
+	};
 
-	function toggleMenu() {
+	const toggleMenu = () => {
 		isOpen = !isOpen;
-		dispatch('toggle', { isOpen });
-	}
+		ontoggle?.({ isOpen });
+	};
 
-	function handleClickOutside(event) {
+	const handleClickOutside = (event) => {
 		if (!isOpen) return;
 
-		// If click is outside the menu and outside the button
 		if (
 			closeOnClickOutside &&
 			slideOutMenuContentRef &&
@@ -72,12 +68,11 @@ the menu takes the full screen and appears at top of DOM
 			!buttonRef.contains(event.target)
 		) {
 			isOpen = false;
-			dispatch('toggle', { isOpen });
+			ontoggle?.({ isOpen });
 		}
-	}
+	};
 
-	// Compute fly transition parameters based on position
-	function getFlyParams() {
+	const getFlyParams = () => {
 		const params = { duration: transitionDuration, x: 0, y: 0 };
 
 		if (!isMobile) {
@@ -96,47 +91,38 @@ the menu takes the full screen and appears at top of DOM
 					break;
 			}
 		} else {
-			// For mobile, slide up from bottom
 			params.y = 20;
 		}
 
 		return params;
-	}
+	};
 
-	// Function to check and adjust menu position after it's visible
-	function checkMenuPosition() {
+	const checkMenuPosition = () => {
 		if (!isMobile && slideOutMenuContentRef && isOpen) {
 			const menuRect = slideOutMenuContentRef.getBoundingClientRect();
 			const windowHeight = window.innerHeight;
 			const windowWidth = window.innerWidth;
 
 			if (position === 'left' || position === 'right') {
-				// Check if menu extends beyond viewport bottom
 				if (menuRect.bottom > windowHeight) {
 					const adjustment = menuRect.bottom - windowHeight;
 					slideOutMenuContentRef.style.top = `calc(0px - ${adjustment}px)`;
-				}
-				// Check if menu extends beyond viewport top
-				else if (menuRect.top < 0) {
+				} else if (menuRect.top < 0) {
 					slideOutMenuContentRef.style.top = '0px';
 				}
 			} else if (position === 'top' || position === 'bottom') {
-				// Check if menu extends beyond viewport right
 				if (menuRect.right > windowWidth) {
 					const adjustment = menuRect.right - windowWidth;
 					slideOutMenuContentRef.style.left = `calc(50% - ${adjustment}px)`;
-				}
-				// Check if menu extends beyond viewport left
-				else if (menuRect.left < 0) {
+				} else if (menuRect.left < 0) {
 					slideOutMenuContentRef.style.left = '0px';
 					slideOutMenuContentRef.style.transform = 'none';
 				}
 			}
 		}
-	}
+	};
 
-	// Get menu position styles based on position prop - keep original implementation
-	function getMenuPositionStyle() {
+	const getMenuPositionStyle = () => {
 		if (isMobile) {
 			return `
 				position: fixed;
@@ -182,36 +168,33 @@ the menu takes the full screen and appears at top of DOM
 		return Object.entries(styles)
 			.map(([key, value]) => `${key}: ${value}`)
 			.join('; ');
-	}
+	};
 
-	// Watch for isOpen changes to trigger position check
-	$: if (isOpen) {
-		menuAdjusted = false;
-		// Use a small delay to ensure the menu has been rendered
-		setTimeout(() => {
-			checkMenuPosition();
-			menuAdjusted = true;
-		}, 50);
-	}
+	$effect(() => {
+		if (isOpen) {
+			setTimeout(() => {
+				checkMenuPosition();
+			}, 50);
+		}
+	});
 
-	// Handle window resize to readjust menu position
-	function handleResize() {
+	const handleResize = () => {
 		if (isOpen) {
 			checkMenuPosition();
 		}
-	}
-
-	$: menuW = isMobile ? screenW : menuWidth; // Full width on mobile
+	};
 </script>
 
-<svelte:window on:click={handleClickOutside} bind:innerWidth={screenW} on:resize={handleResize} />
+<svelte:window onclick={handleClickOutside} bind:innerWidth={screenW} onresize={handleResize} />
 
 <div class="slideout-menu-container" class:vertical={position === 'top' || position === 'bottom'}>
 	<!-- BUTTON TO OPEN/CLOSE MENU -->
-	<div id="slideout-menu-button" class="menu-button" on:click={toggleMenu} bind:this={buttonRef}>
-		<slot name="button">
+	<div id="slideout-menu-button" class="menu-button" onclick={toggleMenu} bind:this={buttonRef}>
+		{#if buttonSnippet}
+			{@render buttonSnippet()}
+		{:else}
 			<button>Menu</button>
-		</slot>
+		{/if}
 	</div>
 
 	<!-- MENU CONTENTS -->
@@ -228,13 +211,15 @@ the menu takes the full screen and appears at top of DOM
 			bind:this={slideOutMenuContentRef}
 			use:addToPortal={isMobile}
 		>
-			<div class="close-button" on:click={toggleMenu}>
+			<div class="close-button" onclick={toggleMenu}>
 				<img src={closeButtonIcon} alt="Close menu" />
 			</div>
 
-			<slot name="menu">
+			{#if menuSnippet}
+				{@render menuSnippet()}
+			{:else}
 				<p>Default Menu Content</p>
-			</slot>
+			{/if}
 		</div>
 	{/if}
 </div>

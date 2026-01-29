@@ -1,17 +1,9 @@
 import adapter from '@sveltejs/adapter-auto';
-import autoprefixer from 'autoprefixer';
-import preprocess from 'svelte-preprocess';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: preprocess({
-		postcss: {
-			plugins: [autoprefixer]
-		},
-		scss: {
-			prependData: `@import './src/lib/styles/mixins.scss';`
-		}
-	}),
+	preprocess: vitePreprocess(),
 	kit: {
 		adapter: adapter()
 	}

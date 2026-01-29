@@ -1,14 +1,11 @@
 <script>
-	import logo from '$lib/assets/logo_PSE_white_wText.svg';
-	import PseStripe from '$lib/components/common/PSEStripe.svelte';
 	import { authenticated } from '$lib/stores/siteData';
 	import { fade } from 'svelte/transition';
 
-	// Local state
 	const correctPassword = 'MyPassword';
-	let password = '';
-	let showModal = true;
-	let containerW = 0;
+	let password = $state('');
+	let showModal = $state(true);
+	let containerW = $state(0);
 
 	const hash = (s) =>
 		s.split('').reduce((a, b) => {
@@ -23,10 +20,16 @@
 		}
 	};
 
-	$: if ($authenticated) {
-		showModal = false;
-	}
-	$: password, checkPassword();
+	$effect(() => {
+		if ($authenticated) {
+			showModal = false;
+		}
+	});
+
+	$effect(() => {
+		password;
+		checkPassword();
+	});
 </script>
 
 {#if showModal}

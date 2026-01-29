@@ -3,19 +3,16 @@
 	import tooltipIcon from '$lib/assets/icon_tooltip.svg';
 	import TooltipPopup from '$lib/components/ToolTips/TooltipSimple.svelte';
 
-	export let text = '';
-	export let placement = 'right';
-	export let iconSize = '1.5rem';
+	let { text = '', placement = 'right', iconSize = '1.5rem' } = $props();
 
-	// Create a reactive statement to update the tooltip props when text changes
-	$: tooltipProps = {
+	let tooltipProps = $derived({
 		component: TooltipPopup,
 		props: {
 			text,
 			placement,
 			strategy: 'fixed'
 		}
-	};
+	});
 </script>
 
 <img

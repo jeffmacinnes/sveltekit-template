@@ -1,9 +1,12 @@
 <script>
 	import placeholder from '$lib/assets/placeholder.png';
 
-	let h, w;
+	let h = $state();
+	let w = $state();
 
-	$: console.log('placeholder', w, h);
+	$effect(() => {
+		console.log('placeholder', w, h);
+	});
 </script>
 
 <div
